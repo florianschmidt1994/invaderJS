@@ -22,11 +22,12 @@ export default class Bullet {
         this.htmlElement.style.bottom = "30px";
         this.htmlElement.style.position = "fixed";
         this.htmlElement.style.color = getRandomColor();
-        this.htmlElement.style.width = "10px";
-        this.htmlElement.style.height = "10px";
-        this.htmlElement.style.backgroundColor = "blue";
+        // this.htmlElement.style.width = "10px";
+        // this.htmlElement.style.height = "10px";
+        // this.htmlElement.style.backgroundColor = "blue";
+        this.htmlElement.style.fontSize = "large";
         container.appendChild(this.htmlElement);
-        this.setCoordX(x);
+        this.setCoordX(x - 4);
         this.setCoordY(y);
         this.hasHit = false;
     }
