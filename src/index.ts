@@ -63,6 +63,7 @@ function hellWorld() {
     }, 1000 / fps);
 }
 
+// check if a bullet is hitting a target
 function hit(bullet: Bullet, target: Target) {
 
     const rectA = bullet.htmlElement.getBoundingClientRect();
@@ -80,18 +81,31 @@ function generateId(): string {
     return (count++).toString();
 }
 
-function parseDom(e: Element) {
+function parseDom(e: HTMLElement) {
+
     if (e.children.length === 0) {
         addId(e, generateId());
     } else {
         for (let i = 0; i < e.children.length; i++) {
-            parseDom(e.children[i]);
+            parseDom(<HTMLElement>e.children[i]);
         }
     }
 }
 
-function addId(e: Element, id: string) {
-    e.setAttribute("data-spaceinvader-id", id)
+function addId(e: HTMLElement, id: string) {
+    if (e.innerText && e.innerText !== "") {
+
+        const innerText = e.innerText;
+        e.innerText = "";
+
+        for (let letter of innerText.split("")) {
+            let newChild = document.createElement("span");
+            newChild.innerText = letter;
+            newChild.setAttribute("data-spaceinvader-id", generateId());
+            // addId(newChild, generateId());
+            e.appendChild(newChild);
+        }
+    }
 }
 
 function addRocket(doc: HTMLDocument): HTMLElement {
