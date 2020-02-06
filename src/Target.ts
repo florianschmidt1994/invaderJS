@@ -5,9 +5,13 @@ export class Target implements Updateable {
   htmlElement: HTMLElement;
   isHit: boolean;
 
-  constructor(domElement: HTMLElement) {
+  constructor(domElement: HTMLElement, debug: boolean = false) {
     this.htmlElement = domElement;
-    this.htmlElement.style.border = "1px solid black";
+
+    if (debug) {
+      this.htmlElement.style.border = "1px solid black";
+    }
+
     this.isHit = false;
   }
 
