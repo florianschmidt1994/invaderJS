@@ -1,6 +1,6 @@
 <h1 align="center">InvaderJS</h1>
-A tiny spaceinvader-inspired game where you can destroy your DOM by firing bullets at elements 
 <p align="center">
+  A tiny spaceinvader-inspired game where you can destroy your DOM by firing bullets at elements <br/>
   <a href="https://florianschmidt1994.github.io/invaderJS/">Try Online</a> | <a href="https://github.com/florianschmidt1994/invaderJS/releases/download/v0.1/bundle.js">Download</a></p>
 
 ```
