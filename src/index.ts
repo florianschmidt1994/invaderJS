@@ -2,17 +2,67 @@ import {Keys} from "./keys";
 import Bullet from "./Bullet";
 import {Target} from "./Target";
 
-function createTargets(document: Document): Target[] {
-    // TODO: Verify type system stuff here!
-    const elements: NodeList = <NodeList><unknown>document.querySelectorAll("[data-spaceinvader-id]");
+function createLeaf(el: HTMLElement): TargetNode {
+    return new TargetNode(new Target(<HTMLElement>el), []);
+}
 
-    const targets = [];
-    for (let i = 0; i < elements.length; i++) {
-        const curr = elements[i];
-        targets.push(new Target(<HTMLElement>curr));
+function createTargets(el: HTMLElement): TargetNode {
+
+    let children = el.children;
+
+    if (children.length === 0) {
+        return createLeaf(el);
+    } else {
+        // @ts-ignore
+        return new TargetNode(new Target(el), [].map.call(children, el => createTargets(el)))
+    }
+}
+
+class TargetNode {
+    children: TargetNode[];
+    self: Target;
+
+    constructor(self: Target, children: TargetNode[]) {
+        this.self = self;
+        this.children = children;
     }
 
-    return targets;
+    update() {
+        this.self.update();
+        for (let child of this.children) {
+            child.update();
+        }
+    }
+
+    checkHasHitAny(bullet: Bullet): boolean {
+        if (this.children.length === 0) {
+
+            if (this.self.isHit) {
+                return false;
+            }
+
+            if (hit(bullet, this.self)) {
+                this.self.setIsHit(true);
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+
+            if (!hit(bullet, this.self)) {
+                return false;
+            }
+
+            let hasHitAny: boolean = false;
+
+            for (let child of this.children) {
+                hasHitAny = hasHitAny || child.checkHasHitAny(bullet);
+            }
+
+            return hasHitAny;
+        }
+
+    }
 }
 
 function hellWorld() {
@@ -29,7 +79,7 @@ function hellWorld() {
     const gameKeys = new Keys(document);
 
     let bullets: Bullet[] = [];
-    let targets = createTargets(document);
+    let targets = createTargets(document.body);
 
     window.addEventListener('keydown', function (e) {
         if (e.keyCode == 32 && e.target == document.body) {
@@ -46,19 +96,17 @@ function hellWorld() {
         }
 
         bullets.forEach(b => b.update());
-        targets.forEach(target => target.update());
+
+        targets.update();
 
         bullets.forEach(bullet => {
-            targets.forEach(target => {
-                if (hit(bullet, target)) {
-                    target.setIsHit(true);
-                    bullet.setHasHit();
-                }
-            });
+            const isHit = targets.checkHasHitAny(bullet);
+            if (isHit) {
+                bullet.setHasHit();
+            }
         });
 
         bullets = bullets.filter(bullet => !bullet.hasHit);
-        targets = targets.filter(target => !target.isHit);
 
     }, 1000 / fps);
 }
@@ -84,7 +132,7 @@ function generateId(): string {
 function parseDom(e: HTMLElement) {
 
     if (e.children.length === 0) {
-        addId(e, generateId());
+        addId(e);
     } else {
         for (let i = 0; i < e.children.length; i++) {
             parseDom(<HTMLElement>e.children[i]);
@@ -92,7 +140,7 @@ function parseDom(e: HTMLElement) {
     }
 }
 
-function addId(e: HTMLElement, id: string) {
+function addId(e: HTMLElement) {
     if (e.innerText && e.innerText !== "") {
 
         const innerText = e.innerText;
@@ -102,7 +150,6 @@ function addId(e: HTMLElement, id: string) {
             let newChild = document.createElement("span");
             newChild.innerText = letter;
             newChild.setAttribute("data-spaceinvader-id", generateId());
-            // addId(newChild, generateId());
             e.appendChild(newChild);
         }
     }
@@ -180,7 +227,7 @@ class Rocket implements Updateable {
         this.domNode.style.left = value + "px";
     }
 
-    getBulletCenter() : {x: number, y: number} {
+    getBulletCenter(): { x: number, y: number } {
         const x = this.domNode.getBoundingClientRect().x + (this.domNode.getBoundingClientRect().width / 2);
         const y = this.domNode.getBoundingClientRect().height;
 
